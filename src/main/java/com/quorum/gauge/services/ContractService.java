@@ -67,6 +67,7 @@ import java.util.stream.Collectors;
 
 import static com.quorum.gauge.sol.SimpleStorage.FUNC_GET;
 import static java.util.Collections.emptyList;
+import static org.web3j.tx.Contract.deployRemoteCall;
 
 @Service
 public class ContractService extends AbstractService {
@@ -480,11 +481,8 @@ public class ContractService extends AbstractService {
                     DEFAULT_GAS_LIMIT, BigInteger.valueOf(initalValue), dpContractAddress).flowable().toObservable();
 
             case "storeb":
-                return Storeb.deploy(
-                    client,
-                    transactionManager,
-                    BigInteger.valueOf(0),
-                    DEFAULT_GAS_LIMIT, BigInteger.valueOf(initalValue), dpContractAddress).flowable().toObservable();
+                String encodedConstructor = FunctionEncoder.encodeConstructor(Arrays.<Type>asList(new org.web3j.abi.datatypes.generated.Uint256(initalValue), new org.web3j.abi.datatypes.Address(dpContractAddress)));
+                return deployRemoteCall(Storeb.class, client, transactionManager, BigInteger.valueOf(0), DEFAULT_GAS_LIMIT, Storeb.BINARY, encodedConstructor).flowable().toObservable();
             case "storec":
                 return Storec.deploy(
                     client,
@@ -532,7 +530,7 @@ public class ContractService extends AbstractService {
             .flatMap(address -> {
                 org.web3j.tx.ClientTransactionManager txManager = vanillaClientTransactionManager(client, address);
                 return ClientReceipt.load(contractAddress, client, txManager, BigInteger.valueOf(0), DEFAULT_GAS_LIMIT)
-                    .deposit(new byte[32], value).flowable().toObservable();
+                    .deposit(value.toByteArray()).flowable().toObservable();
             });
     }
 
@@ -546,7 +544,7 @@ public class ContractService extends AbstractService {
                 List.of(privacyService.id(target)));
             return ClientReceipt.load(contractAddress, client, txManager,
                 BigInteger.valueOf(0),
-                DEFAULT_GAS_LIMIT).deposit(new byte[32], value).flowable().toObservable();
+                DEFAULT_GAS_LIMIT).deposit(value.toByteArray()).flowable().toObservable();
         });
     }
 

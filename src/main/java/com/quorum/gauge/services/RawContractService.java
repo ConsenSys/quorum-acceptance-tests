@@ -419,7 +419,7 @@ public class RawContractService extends AbstractService {
             .flatMap(qrtxm -> ClientReceipt.load(contractAddress, client,
                 qrtxm,
                 BigInteger.valueOf(0),
-                DEFAULT_GAS_LIMIT).deposit(new byte[32], BigInteger.ZERO)
+                DEFAULT_GAS_LIMIT).deposit(BigInteger.ZERO.toByteArray())
                 .flowable().toObservable());
     }
 
